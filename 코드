@@ -1,0 +1,54 @@
+import pandas as pd
+
+# 1. 데이터 불러오기
+# Make sure 'ca-coviddata.csv' exists in the same directory as the notebook,
+# or provide the correct path to the file.
+raw_ca_df = pd.read_csv('./ca-coviddata.csv')
+raw_tx_df = pd.read_csv('./tx-coviddata.csv')
+raw_va_df = pd.read_csv('./va-coviddata.csv')
+raw_il_df = pd.read_csv('./il-coviddata.csv')
+raw_wa_df = pd.read_csv('./wa-coviddata.csv')
+
+# 2. 필요한 열 추출 및 인덱스 설정
+ca_dateindex_df = raw_ca_df[['tot_cases', 'date_updated']].set_index('date_updated')
+tx_dateindex_df = raw_tx_df[['tot_cases', 'date_updated']].set_index('date_updated')
+va_dateindex_df = raw_va_df[['tot_cases', 'date_updated']].set_index('date_updated')
+il_dateindex_df = raw_il_df[['tot_cases', 'date_updated']].set_index('date_updated')
+wa_dateindex_df = raw_wa_df[['tot_cases', 'date_updated']].set_index('date_updated')
+
+# 3. 날짜 인덱스 타입 변환
+ca_dateindex_df.index = pd.to_datetime(ca_dateindex_df.index)
+tx_dateindex_df.index = pd.to_datetime(tx_dateindex_df.index)
+va_dateindex_df.index = pd.to_datetime(va_dateindex_df.index)
+il_dateindex_df.index = pd.to_datetime(il_dateindex_df.index)
+wa_dateindex_df.index = pd.to_datetime(wa_dateindex_df.index)
+
+# 4. 인구 설정 및 비율 계산
+USA_population = 338_289_856
+
+ca_population = 39_430_000
+tx_population = 31_290_000
+va_population = 8_810_000
+il_population = 12_710_000
+wa_population = 6_700_000
+
+ca_rate = round(ca_population / USA_population, 3)
+tx_rate = round(tx_population / USA_population, 3)
+va_rate = round(va_population / USA_population, 3)
+il_rate = round(il_population / USA_population, 3)
+wa_rate = round(wa_population / USA_population, 3)
+
+# 5. 비율 반영한 최종 데이터프레임 생성
+final_df = pd.concat([
+    ca_dateindex_df['tot_cases'] * ca_rate,
+    tx_dateindex_df['tot_cases'] * tx_rate,
+    va_dateindex_df['tot_cases'] * va_rate,
+    il_dateindex_df['tot_cases'] * il_rate,
+    wa_dateindex_df['tot_cases'] * wa_rate
+], axis=1)
+
+final_df.columns = ['CA', 'TX', 'VA', 'IL', 'WA']
+
+# 6. 결과 확인 및 시각화
+print(final_df.head())
+final_df.plot.line(rot=45)
